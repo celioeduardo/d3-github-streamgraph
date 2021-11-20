@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+     "d3-area-label": "1.5.0",
+    "d3": "6.5.0",
+    "array-blur": "1.1.0"
+   
+  },
+  "license": "ISC",
+  "vizhub": {
+    "libraries": {
+      "array-blur": {
+        "global": "d3",
+        "path": "/dist/array-blur.min.js"
+      },
+      "d3-area-label": {
+        "global": "d3",
+        "path": "/build/d3-area-label.js"
+      }
+    }
+  }
+}
