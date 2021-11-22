@@ -1,9 +1,5 @@
-const fs = require("fs");
-const d3 = require('d3');
-
-const {
+import {
   timeParse,
-  timeFormat,
   utcWeek,
   utcWeeks,
   group,
@@ -11,20 +7,16 @@ const {
   extent,
   stackOffsetWiggle,
   stackOrderAppearance,
-} = d3;
+} from 'd3';
+import { blur } from 'array-blur';
+
+const blurRadius = 15;
 
 const parseDate = timeParse('%Y-%m-%d');
-const formatDate = timeFormat('%Y-%m-%d');
 
 const layer = d => d.repo;
 
-const aggregate = () => {
-  // Load all commits
-  const dataString = fs.readFileSync('data/all-d3-commits.json');
-  let data = JSON.parse(dataString);
-  
-  console.log(`${data.length} commits loaded`);
-
+export const transformData = (data) => {
   //data = data.filter(d => d.repo !== 'd3');
   data.forEach((d) => {
     d.date = utcWeek.floor(parseDate(d.date.split(' ')[0]));
@@ -37,22 +29,16 @@ const aggregate = () => {
     layer
   );
   
+
   const layerGroupedData = group(data, layer);
 
   const layers = Array.from(layerGroupedData.keys());
 
   const [start, stop] = extent(data, (d) => d.date);
-  
-  console.log('Date range', start, stop);
-
   const allWeeks = utcWeeks(start, stop);
 
   const dataBylayer = new Map();
 
-  const aggregatedData = {
-    dates: allWeeks.map(formatDate),
-    repositories: {}
-  };
   for (let layer of layers) {
     const layerData = allWeeks.map((date) => {
       const value = groupedData.get(date);
@@ -60,10 +46,26 @@ const aggregate = () => {
       const commitCount = commits ? commits.length : 0;
       return commitCount;
     });
-    aggregatedData.repositories[layer] = layerData;
+
+    // Apply smoothing
+    const smoothedLayerData = blur().radius(blurRadius)(layerData);
+
+    dataBylayer.set(layer, smoothedLayerData);
   }
 
-  fs.writeFileSync(`../public/aggregatedData.json`, JSON.stringify(aggregatedData));
-}
+  const transformedData = [];
+  allWeeks.forEach((date, i) => {
+    const row = { date };
+    for (let layer of layers) {
+      row[layer] = dataBylayer.get(layer)[i];
+    }
+    transformedData.push(row);
+  });
 
-module.exports = aggregate;
+  const stackedData = stack()
+    .offset(stackOffsetWiggle)
+    .order(stackOrderAppearance)
+    .keys(layers)(transformedData);
+
+  return { data, stackedData };
+};
