@@ -22,6 +22,6 @@ const run = async () => {
   // Aggregate by week
   console.log('Aggregating...');
   aggregate();
-}
+};
 
-run().then(_ => console.log('Done!'));
+run().then((_) => console.log('Done!'));

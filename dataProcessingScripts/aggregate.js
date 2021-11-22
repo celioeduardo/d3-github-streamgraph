@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require('fs');
 const d3 = require('d3');
 
 const {
@@ -16,13 +16,13 @@ const {
 const parseDate = timeParse('%Y-%m-%d');
 const formatDate = timeFormat('%Y-%m-%d');
 
-const layer = d => d.repo;
+const layer = (d) => d.repo;
 
 const aggregate = () => {
   // Load all commits
   const dataString = fs.readFileSync('data/all-d3-commits.json');
   let data = JSON.parse(dataString);
-  
+
   console.log(`${data.length} commits loaded`);
 
   //data = data.filter(d => d.repo !== 'd3');
@@ -31,18 +31,14 @@ const aggregate = () => {
   });
 
   // Aggregate by week and repository.
-  const groupedData = group(
-    data,
-    (d) => d.date,
-    layer
-  );
-  
+  const groupedData = group(data, (d) => d.date, layer);
+
   const layerGroupedData = group(data, layer);
 
   const layers = Array.from(layerGroupedData.keys());
 
   const [start, stop] = extent(data, (d) => d.date);
-  
+
   console.log('Date range', start, stop);
 
   const allWeeks = utcWeeks(start, stop);
@@ -51,7 +47,7 @@ const aggregate = () => {
 
   const aggregatedData = {
     dates: allWeeks.map(formatDate),
-    repositories: {}
+    repositories: {},
   };
   for (let layer of layers) {
     const layerData = allWeeks.map((date) => {
@@ -63,7 +59,10 @@ const aggregate = () => {
     aggregatedData.repositories[layer] = layerData;
   }
 
-  fs.writeFileSync(`../docs/aggregatedData.json`, JSON.stringify(aggregatedData));
-}
+  fs.writeFileSync(
+    `../docs/aggregatedData.json`,
+    JSON.stringify(aggregatedData)
+  );
+};
 
 module.exports = aggregate;

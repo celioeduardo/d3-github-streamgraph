@@ -14,7 +14,7 @@ const blurRadius = 15;
 
 const parseDate = timeParse('%Y-%m-%d');
 
-const layer = d => d.repo;
+const layer = (d) => d.repo;
 
 export const transformData = (data) => {
   //data = data.filter(d => d.repo !== 'd3');
@@ -23,12 +23,7 @@ export const transformData = (data) => {
   });
 
   // Aggregate by week and repository.
-  const groupedData = group(
-    data,
-    (d) => d.date,
-    layer
-  );
-  
+  const groupedData = group(data, (d) => d.date, layer);
 
   const layerGroupedData = group(data, layer);
 
